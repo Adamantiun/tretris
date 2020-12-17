@@ -21,10 +21,10 @@ O objetivo do Tretris é aguantar o mais tempo possível. Existem blocos que cai
 
 ### Tarefas
 
-- [ ] desenhar bloco a cair (posição, forma)
-- [ ] quando o bloco chega abaixo fica a fazer parte da matriz do jogo
-- [ ] teclas movem bloco para os lados
-- [ ] linha na horizontal elimina
-- [ ] jogo acaba quando bloco fica em cima
-- [ ] melhorias no interface, estatísticas
-- [ ] modos 2 jogadores: co-op e competitivo
+1. [ ] desenhar bloco a cair (posição, forma)
+1. [ ] quando o bloco chega abaixo fica a fazer parte da matriz do jogo
+1. [ ] teclas movem bloco para os lados
+1. [ ] linha na horizontal elimina
+1. [ ] jogo acaba quando bloco fica em cima
+1. [ ] melhorias no interface, estatísticas
+1. [ ] modos 2 jogadores: co-op e competitivo
