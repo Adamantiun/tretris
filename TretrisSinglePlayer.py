@@ -184,7 +184,7 @@ def rpç_choose(rformsl, flst=[]):
     random.shuffle(rformsl)
     r=random.choice(rformsl)
     if r in flst:
-        if random.choice([1,2,3,4,5])<=2:
+        if random.choice([1,2])==1:
             return(rpç_choose(rformsl, flst))
     return(r)
         
@@ -297,6 +297,7 @@ def game():
                         peça.y-=1
                         if peça.y==-1:
                             peça.y+=1
+                            play=False
                             break
                         for i in range(5):
                             for j in range(5):
@@ -388,6 +389,7 @@ def game():
                     peça.y-=1
                     if peça.y==-1:
                         peça.y+=1
+                        play=False
                         break
                     for i in range(5):
                         for j in range(5):
@@ -423,29 +425,99 @@ def game():
 def main():
     pygame.init()
     mfont=pygame.font.SysFont("Calibri", int(blok_siz*1.75))
+    sfont=pygame.font.SysFont("Calibri", int(blok_siz*0.75))
     # tela = pygame.display.set_mode((612,612))
     # tela.fill(WHITE)
     # tela.blit(bg, (0, 0))
+    menuplay=True
     pygame.display.set_caption("Tretris")
     tela = pygame.display.set_mode((l_tel,h_tel))
     tela.fill((58,58,58))
     grid=grid_make()
-    mpeça=piece(O,5,10)
-    for i in range(len(grid)):
-        for j in range(len(grid[i])):
-            pygame.draw.rect(tela, grid[i][j], ((x_top_e+j*(blok_siz+lin),y_top_e+i*(blok_siz+lin)),(blok_siz,blok_siz)))
+    mpeça=piece(O,5,9)
+    grid[19][0]=(255,0,0)
+    grid[19][3]=(255,0,0)
+    grid[19][6]=(255,0,0)
+    grid[19][9]=(255,0,0)
         
     tela.blit(mfont.render('Welcome to Tretris', True, (255,255,255)), (x_top_e-int(1.5*blok_siz),y_top_e-blok_siz*2))
-    while True:
+    
+    while menuplay:
+        
+        tela.fill((58,58,58))
+        
+        
+        if mpeça.y==18 and mpeça.x==2:
+            grid[19][0]=(0,255,0)
+            grid[19][3]=(0,255,0)
+        elif mpeça.y==18 and mpeça.x==5:
+            grid[19][6]=(0,255,0)
+            grid[19][3]=(0,255,0)
+        elif mpeça.y==18 and mpeça.x==8:
+            grid[19][6]=(0,255,0)
+            grid[19][9]=(0,255,0)
+        else:
+            grid[19][0]=(255,0,0)
+            grid[19][3]=(255,0,0)
+            grid[19][6]=(255,0,0)
+            grid[19][9]=(255,0,0)
+        
+        for i in range(len(grid)):
+            for j in range(len(grid[i])):
+                pygame.draw.rect(tela, grid[i][j], ((x_top_e+j*(blok_siz+lin),y_top_e+i*(blok_siz+lin)),(blok_siz,blok_siz)))
+        
+        if mpeça.y>=17 and mpeça.x<=3:
+            tela.blit(mfont.render('Single Player', True, (255,255,255)), (x_top_e+int((blok_siz+lin)*0.8),y_top_e+int((blok_siz+lin)*2.2)))
+            tela.blit(mfont.render('(Classic Tetris)', True, (255,255,255)), (x_top_e+int((blok_siz+lin)*0.35),y_top_e+int((blok_siz+lin)*4.2)))
+        elif mpeça.y>=17 and mpeça.x<=6:
+            pass
+        elif mpeça.y>=17 and mpeça.x<=9:
+            pass
+        else:
+            tela.blit(mfont.render('Move:', True, (255,255,255)), (x_top_e+int((blok_siz+lin)*2.85),y_top_e+int((blok_siz+lin)*2.2)))
+            tela.blit(mfont.render('↑', True, (255,255,255)), (x_top_e+int((blok_siz+lin)*4.25),y_top_e+int((blok_siz+lin)*4.2)))
+            tela.blit(mfont.render('← ↓ →', True, (255,255,255)), (x_top_e+int((blok_siz+lin)*2.35),y_top_e+int((blok_siz+lin)*6.2)))
+        
+        tela.blit(sfont.render('Enter to Select', True, (255,255,255)), (x_top_e+int((blok_siz+lin)*2.9),y_top_e+int((blok_siz+lin)*16.2)))
+        tela.blit(sfont.render('Single', True, (255,255,255)), (x_top_e+blok_siz+lin*5,y_top_e+int((blok_siz+lin)*18.2)))
+        tela.blit(sfont.render('Player', True, (255,255,255)), (x_top_e+blok_siz+lin*4,y_top_e+(blok_siz+lin)*19))
+        
         for i in range(5):
             for j in range(5):
                 if mpeça.s[mpeça.rot][i][j]=='0' and (mpeça.y+i-2)*(blok_siz+1)>=0:
+                    pygame.draw.rect(tela, (58,58,58), ((x_top_e+(mpeça.x+j-2)*(blok_siz+1),y_top_e+(mpeça.y+i-2)*(blok_siz+1)), (blok_siz+lin,blok_siz+lin)))
                     pygame.draw.rect(tela, mpeça.clr, ((x_top_e+(mpeça.x+j-2)*(blok_siz+1),y_top_e+(mpeça.y+i-2)*(blok_siz+1)), (blok_siz,blok_siz)))
         pygame.display.update()
         for event in pygame.event.get():
             if event.type == pygame.KEYDOWN:
-                pygame.quit()
+                if event.key == pygame.K_RIGHT:
+                    mpeça.x+=1
+                    if not(is_valid(grid, mpeça)):
+                        mpeça.x-=1
+                if event.key == pygame.K_LEFT:
+                    mpeça.x-=1
+                    if not(is_valid(grid, mpeça)):
+                        mpeça.x+=1
+                if event.key == pygame.K_DOWN:
+                    mpeça.y+=1
+                    if not(is_valid(grid, mpeça)):
+                        mpeça.y-=1
+                if event.key == pygame.K_UP:
+                    mpeça.y-=1
+                    if not(is_valid(grid, mpeça)):
+                        mpeça.y+=1
+                if event.key == pygame.K_RETURN:
+                    if mpeça.y==18 and mpeça.x==2:
+                        menuplay=False
+                        next=0
+                        break
             if event.type == pygame.QUIT:
-                pygame.quit()
+                menuplay=False
+                break
                 # sys.exit()
+            
+            
+    pygame.quit()
+    if next==0:
+        game()
 main()
