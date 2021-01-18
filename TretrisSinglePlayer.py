@@ -144,10 +144,36 @@ def grid_make():
 
 def draw_score(tela,score, topx=x_top_e):
     s_font=pygame.font.SysFont("Calibri", blok_siz)
-    pygame.draw.rect(tela, (100,100,100), ((topx-10-(blok_siz//2)*5,y_top_e+(blok_siz//2+lin)*5+10),((blok_siz//2+lin)*5,(blok_siz//2+lin)*5-10)))
-    tela.blit(s_font.render('Score:', True, (225,225,255)), (topx-10-(blok_siz//2)*5+2,y_top_e+(blok_siz//2+lin)*6))
-    tela.blit(s_font.render(str(int(score)), True, (225,225,255)), (topx-10-(blok_siz//2)*5+2,y_top_e+(blok_siz//2+lin)*8))
+    pygame.draw.rect(tela, (100,100,100), ((topx-25-(blok_siz//2)*5,y_top_e+(blok_siz//2+lin)*5+10),((blok_siz//2+lin)*5+20,(blok_siz//2+lin)*5-10)))
+    tela.blit(s_font.render('Score:', True, (225,225,255)), (topx-25-(blok_siz//2)*5+2,y_top_e+(blok_siz//2+lin)*6))
+    tela.blit(s_font.render(str(int(score)), True, (225,225,255)), (topx-25-(blok_siz//2)*5+2,y_top_e+(blok_siz//2+lin)*8))
     pass
+
+def warning(tela, cond, topx=x_top_e):
+    if cond:
+        w_font=pygame.font.SysFont("Arial", int(blok_siz*0.8))
+        pygame.draw.rect(tela, (255,0,0), ((topx-25-(blok_siz//2)*5,y_top_e+(blok_siz//2+lin)*10+10),((blok_siz//2+lin)*5+20,(blok_siz//2+lin)*3-10)))
+        tela.blit(w_font.render('INCOMING', True, (255,225,0)), (topx-25-(blok_siz//2)*5+1,y_top_e+(blok_siz//2+lin)*11))
+    else:
+        pygame.draw.rect(tela, (58,58,58), ((topx-25-(blok_siz//2)*5,y_top_e+(blok_siz//2+lin)*10+10),((blok_siz//2+lin)*5+20,(blok_siz//2+lin)*3-10)))
+
+def can_send(grid, n):
+    for i in range(n):
+        ic=0
+        for j in grid[i]:
+            if j==(0,0,0):
+                ic+=1
+        if ic==len(grid[i]):
+            n-=1
+        if n<=0:
+            return True
+    return False
+
+def send_lines(grid, n):
+    hole=random.choice([x for x in range(10)])
+    for i in range(n):
+        grid.pop(0)
+        grid.append([(130,130,130) if x!=hole else (0,0,0) for x in range(10)])        
 
 def draw_waiting(tela,wl, topx=x_top_e):
     for i,s in enumerate(wl):
@@ -193,9 +219,14 @@ def is_dead(peça):
 def rpç_choose(rformsl, flst=[]):
     random.shuffle(rformsl)
     r=random.choice(rformsl)
-    if r in flst:
-        if random.choice([1,2])==1:
-            return(rpç_choose(rformsl, flst))
+    ic=0
+    for p in flst:
+        if r==p:
+            ic+=1
+    if ic>=2:
+        return(rpç_choose(rformsl, flst))
+    if ic==1 and random.choice([1,2])==1:
+        return(rpç_choose(rformsl, flst))
     return(r)
 
 def add_peça(grid, peça):
@@ -273,14 +304,6 @@ def game():
                 c_l_cleard+=1
                 combin=True
         if c_l_cleard>0:
-            # if c_l_cleard==1:
-            #     score+=40*(lvl+1)*(1+0.5*combo)
-            # elif c_l_cleard==2:
-            #     score+=100*(lvl+1)*(1+0.5*combo)
-            # elif c_l_cleard==3:
-            #     score+=300*(lvl+1)*(1+0.5*combo)
-            # else:
-            #     score+=300*c_l_cleard*(lvl+1)*(1+0.5*combo)
             score+=add_score(c_l_cleard, lvl, combo)
             draw_score(tela, score)
         if c_l_cleard>0:
@@ -481,7 +504,7 @@ def game():
         main()
 
 def game_pvp():
-    usedkeys=[pygame.K_UP, pygame.K_DOWN, pygame.K_LEFT, pygame.K_RIGHT, pygame.K_w, pygame.K_a, pygame.K_s, pygame.K_d]
+    usedkeys=[pygame.K_UP, pygame.K_DOWN, pygame.K_LEFT, pygame.K_RIGHT, pygame.K_w, pygame.K_a, pygame.K_s, pygame.K_d, pygame.K_c, pygame.K_v, pygame.K_RETURN, pygame.K_COMMA]
     pygame.init()
     pygame.display.set_caption("Tretris")
     tela = pygame.display.set_mode((l_tel*2+blok_siz*5,h_tel))
@@ -515,7 +538,6 @@ def game_pvp():
     combin1=False
     combo1=0
     holup2=False
-    lines_cleard2=0
     score2=0
     combin2=False
     combo2=0
@@ -525,43 +547,16 @@ def game_pvp():
     GameOver= True
     next=-1
     t_game=0
+    sendl1=[]
+    sendl2=[]
     while play:
+        down1=False
+        down2=False
         t_game+=1
-        c_l_cleard1=0
-        c_l_cleard2=0
         if t_game/1000==60:
             lvl+=1
             t_queda=t_queda*0.9
-        for i in range(len(grid1)):
-            counter1=0
-            counter2=0
-            for j in range(len(grid1[i])):
-                if grid2[i][j]!=(0,0,0):
-                    counter2+=1
-                if grid1[i][j]!=(0,0,0):
-                    counter1+=1
-            if counter1==len(grid1[i]):
-                grid1.pop(i)
-                grid1.insert(0,[(0,0,0) for x in range(10)])
-                c_l_cleard1+=1
-                combin1=True
-            if counter2==len(grid2[i]):
-                grid2.pop(i)
-                grid2.insert(0,[(0,0,0) for x in range(10)])
-                c_l_cleard2+=1
-                combin2=True
-        if c_l_cleard1>0:
-            score1+=add_score(c_l_cleard1, lvl, combo1)
-            draw_score(tela, score1)
-            combo1+=1
-        if c_l_cleard2>0:
-            score2+=add_score(c_l_cleard2, lvl, combo2)
-            draw_score(tela, score2, x_top_2)
-            combo2+=1
-        if not(combin1):
-            combo1=0
-        if not(combin2):
-            combo2=0
+        
         t_caindo1+=1
         t_caindo2+=1
         if insis1:
@@ -586,6 +581,8 @@ def game_pvp():
                     insis1=False
                     t_insis1=0
                     combin1=False
+                    down1=True
+                    
         if insis2:
             t_insis2+=1
         if t_caindo2/1000>t_queda:
@@ -608,6 +605,7 @@ def game_pvp():
                     insis2=False
                     t_insis2=0
                     combin2=False
+                    down2=True
         
         rlog.tick()
 
@@ -646,6 +644,7 @@ def game_pvp():
                         waitl2.append(rpç_choose(rformsl, waitl2+[peça2.s]))
                         draw_waiting(tela, waitl2, x_top_2)
                         combin2=False
+                        down2=True
                 if pygame.K_UP in keys:
                     peça2.rotate()
                     if not(is_valid(grid2, peça2)):
@@ -729,6 +728,7 @@ def game_pvp():
                         waitl1.append(rpç_choose(rformsl, waitl1+[peça1.s]))
                         draw_waiting(tela, waitl1)
                         combin1=False
+                        down1=True
                 if pygame.K_w in keys:
                     peça1.rotate()
                     if not(is_valid(grid1, peça1)):
@@ -790,37 +790,142 @@ def game_pvp():
                         else:
                             holup1=True
                             insis1=True
-            #     if event.key == pygame.K_c and chgs==0:
-            #         if Swap_shape==[]:
-            #             Swap_shape=peça.s
-            #             peça=piece(waitl[0])
-            #             waitl.pop(0)
-            #             waitl.append(rpç_choose(rformsl, waitl+[peça.s]))
-            #             draw_waiting(tela, waitl)
-            #         else:
-            #             temp=Swap_shape
-            #             Swap_shape=peça.s
-            #             peça=piece(temp)
-            #         draw_swap(tela,Swap_shape)
-            #         chgs+=1
-            #     if event.key == pygame.K_SPACE:
-            #         while is_valid(grid,peça):
-            #             peça.y+=1
-            #         peça.y-=1
-            #         if is_dead(peça):
-            #             play=False
-            #             break
-            #         add_peça(grid,peça)
-            #         peça=piece(waitl[0])
-            #         chgs=0
-            #         waitl.pop(0)
-            #         waitl.append(rpç_choose(rformsl, waitl+[peça.s]))
-            #         draw_waiting(tela, waitl)
-            #         combin=False
+                if pygame.K_c in keys and chgs1==0:
+                    if Swap_shape1==[]:
+                        Swap_shape1=peça1.s
+                        peça1=piece(waitl1[0])
+                        waitl1.pop(0)
+                        waitl1.append(rpç_choose(rformsl, waitl1+[peça1.s]))
+                        draw_waiting(tela, waitl1)
+                    else:
+                        temp1=Swap_shape1
+                        Swap_shape1=peça1.s
+                        peça1=piece(temp1)
+                    draw_swap(tela,Swap_shape1)
+                    chgs1+=1
+                if pygame.K_COMMA in keys and chgs2==0:
+                    if Swap_shape2==[]:
+                        Swap_shape2=peça2.s
+                        peça2=piece(waitl2[0])
+                        waitl2.pop(0)
+                        waitl2.append(rpç_choose(rformsl, waitl2+[peça2.s]))
+                        draw_waiting(tela, waitl2, x_top_2)
+                    else:
+                        temp2=Swap_shape2
+                        Swap_shape2=peça2.s
+                        peça2=piece(temp2)
+                    draw_swap(tela,Swap_shape2, x_top_2)
+                    chgs2+=1
+                        
+                if pygame.K_v in keys:
+                    while is_valid(grid1,peça1):
+                        peça1.y+=1
+                    peça1.y-=1
+                    if is_dead(peça1):
+                        play=False
+                        break
+                    add_peça(grid1,peça1)
+                    peça1=piece(waitl1[0])
+                    chgs1=0
+                    waitl1.pop(0)
+                    waitl1.append(rpç_choose(rformsl, waitl1+[peça1.s]))
+                    draw_waiting(tela, waitl1)
+                    combin1=False
+                    down1=True
+                if pygame.K_RETURN in keys:
+                    while is_valid(grid2,peça2):
+                        peça2.y+=1
+                    peça2.y-=1
+                    if is_dead(peça2):
+                        play=False
+                        break
+                    add_peça(grid2,peça2)
+                    peça2=piece(waitl2[0])
+                    chgs2=0
+                    waitl2.pop(0)
+                    waitl2.append(rpç_choose(rformsl, waitl2+[peça2.s]))
+                    draw_waiting(tela, waitl2, x_top_2)
+                    combin2=False
+                    down2=True
             if event.type == pygame.QUIT:
                 play=False
                 GameOver=False
                 break
+        
+        dsend1=0
+        dsend2=0
+        c_l_cleard1=0
+        c_l_cleard2=0
+        for i in range(len(grid1)):
+            counter1=0
+            counter2=0
+            for j in range(len(grid1[i])):
+                if grid2[i][j]!=(0,0,0):
+                    counter2+=1
+                if grid2[i][j]==(130,130,130):
+                    dsend2+=1
+                if grid1[i][j]!=(0,0,0):
+                    counter1+=1
+                if grid1[i][j]==(130,130,130):
+                    dsend1+=1
+            if counter1==len(grid1[i]):
+                grid1.pop(i)
+                grid1.insert(0,[(0,0,0) for x in range(10)])
+                c_l_cleard1+=1
+                combin1=True
+            if counter2==len(grid2[i]):
+                grid2.pop(i)
+                grid2.insert(0,[(0,0,0) for x in range(10)])
+                c_l_cleard2+=1
+                combin2=True
+        if c_l_cleard1>0:
+            score1+=add_score(c_l_cleard1, lvl, combo1)
+            draw_score(tela, score1)
+            combo1+=1
+            if c_l_cleard1-dsend1>=4:
+                sendl1.append(c_l_cleard1-dsend1)
+            elif c_l_cleard1-dsend1>0:
+                if combo1>1:
+                    sendl1.append(c_l_cleard1-dsend1)
+                elif c_l_cleard1-dsend1>1:
+                    sendl1.append(c_l_cleard1-dsend1-1)
+        if down1:
+            for n in sendl2:
+                if can_send(grid1, n):
+                    sendl2.pop(0)
+                    send_lines(grid1, n)
+                else:
+                    send_lines(grid1, n)
+                    play=False
+                    break
+        if c_l_cleard2>0:
+            score2+=add_score(c_l_cleard2, lvl, combo2)
+            draw_score(tela, score2, x_top_2)
+            combo2+=1
+            if c_l_cleard2-dsend2>=4:
+                sendl2.append(c_l_cleard2-dsend2)
+            elif c_l_cleard2-dsend2>0:
+                if combo2>1:
+                    sendl2.append(c_l_cleard2-dsend2)
+                elif c_l_cleard2-dsend2>1:
+                    sendl2.append(c_l_cleard2-dsend2-1)
+        if down2:
+            for n in sendl1:
+                if can_send(grid2, n):
+                    sendl1.pop(0)
+                    send_lines(grid2, n)
+                else:
+                    send_lines(grid2, n)
+                    play=False
+                    break        
+            
+        warning(tela, sendl1!=[], x_top_2)
+        warning(tela, sendl2!=[])
+        if not(combin1):
+            combo1=0
+        if not(combin2):
+            combo2=0
+        
         pygame.display.update()
     pygame.quit()
 
@@ -867,7 +972,8 @@ def main():
             write(tela, mfont, 'Single Player', 0.8, 2.2)
             write(tela, mfont, '(Classic Tetris)', 0.35, 4.2)
         elif mpeça.y>=18 and mpeça.x<=6:
-            pass
+            write(tela, mfont, 'Battle Mode', 0.85, 2.2)
+            write(tela, sfont, '(Same keyboard 1v1)', 2, 4.2)
         elif mpeça.y>=18 and mpeça.x<=9:
             pass
         else:
@@ -878,6 +984,8 @@ def main():
         tela.blit(sfont.render('Enter to Select', True, (255,255,255)), (x_top_e+int((blok_siz+lin)*2.9),y_top_e+int((blok_siz+lin)*16.2)))
         tela.blit(sfont.render('Single', True, (255,255,255)), (x_top_e+blok_siz+lin*5,y_top_e+int((blok_siz+lin)*18.2)))
         tela.blit(sfont.render('Player', True, (255,255,255)), (x_top_e+blok_siz+lin*4,y_top_e+(blok_siz+lin)*19))
+        
+        write(tela, sfont, 'PVP', 4.45, 18.6)
         
         for i in range(5):
             for j in range(5):
